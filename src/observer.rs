@@ -1,6 +1,6 @@
 //! http://gameprogrammingpatterns.com/observer.html
-use std::rc::Rc;
 
+#[derive(Clone, Copy)]
 enum Event {
     EntityFell,
 }
@@ -12,7 +12,7 @@ enum Achievement {
 
 
 trait Observer {
-    fn on_notify<E: Entity>(&self, entity: &E, event: Event) where Self: Sized;
+    fn on_notify<E: Entity>(&self, entity: &E, event: Event);
 }
 
 
@@ -35,6 +35,7 @@ impl Entity for Hero {
 }
 
 
+#[derive(PartialEq)]
 struct Achievements {
     hero_on_bridge: bool,
 }
@@ -44,40 +45,52 @@ impl Achievements {
         Achievements { hero_on_bridge: true }
     }
     fn unlock(&self, achievement: Achievement) {
-        println!("Unlocked achievement, yay");
+        match achievement {
+            Achievement::FellOfTheBridge => println!("Fall of the bridge achievement unlocked.")
+        }
     }
 }
 
 impl Observer for Achievements {
-    fn on_notify<E: Entity>(&self, entity: &E, event: Event) where Self: Sized {
+    fn on_notify<E: Entity>(&self, entity: &E, event: Event) {
         match event {
             Event::EntityFell => {
                 if entity.is_hero() && self.hero_on_bridge {
                     self.unlock(Achievement::FellOfTheBridge)
                 }
-            // Handle other events..
+                // Handle other events..
             }
         }
     }
 }
 
-trait Subject {
-    fn add_observer<T: Observer>(&self, observer: Rc<T>);
-    fn remove_observer<T: Observer>(&self, observer: Rc<T>);
+trait Subject<'a, T: Observer>{
+    fn add_observer(&mut self, observer: &'a T);
+    fn remove_observer(&mut self, observer: &'a T);
     fn notify<E: Entity>(&self, entity: &E, event: Event);
 }
 
-struct EntityFallSubject {
-    observers: Vec<Rc<Observer>>
+struct EntityFallSubject<'a, T: 'a> {
+    observers: Vec<&'a T>,
 }
 
-impl Subject for EntityFallSubject 
+impl<'a, T> EntityFallSubject<'a, T>
+    where T: Observer
 {
-    fn add_observer<T: Observer>(&self, observer: Rc<T>) {
+    pub fn new() -> EntityFallSubject<'a, T> {
+        EntityFallSubject {
+            observers: Vec::new()
+        }
+    }
+}
+
+impl<'a, T> Subject<'a, T> for EntityFallSubject<'a, T> where T: Observer + PartialEq
+{
+    fn add_observer(&mut self, observer: &'a T) {
         self.observers.push(observer);
     }
-    fn remove_observer<T: Observer>(&self, observer: Rc<T>) {
-        for (i, o) in self.observers.into_iter().enumerate() {
+    fn remove_observer(&mut self, observer: &'a T) {
+        for (i, o) in self.observers.clone().into_iter().enumerate() {
             if o == observer {
                 self.observers.remove(i);
             }
@@ -91,30 +104,34 @@ impl Subject for EntityFallSubject
 }
 
 
-struct Physics {
-    fall_event: EntityFallSubject,
+struct Physics<'a, T: 'a + Observer> {
+    fall_event: EntityFallSubject<'a, T>,
 }
 
-impl Physics {
-    pub fn new() -> Physics {
-        Physics {  }
+impl<'a, T> Physics<'a, T> where T: Observer + PartialEq
+{
+    pub fn new() -> Physics<'a, T> {
+        let fall_event = EntityFallSubject::new();
+        Physics { fall_event: fall_event }
     }
 
-    pub fn update_entity<E: Entity>(&self, entity: E) {
+    pub fn update_entity<E: Entity>(&self, entity: &E) {
         // To some physics...
         // Entity has fallen of the bridge
         self.fall_event.notify(entity, Event::EntityFell);
     }
 
-    pub fn fall_event(&self) -> &mut EntityFallSubject {
-        self.fall_event
+    pub fn fall_event(&mut self) -> &mut EntityFallSubject<'a, T> {
+        &mut self.fall_event
     }
 }
 
 pub fn test() {
+    println!("\n---------------------------");
+    println!("Command test.\n");
     let hero = Hero::new();
-    let physics = Physics::new();
     let achievements = Achievements::new();
-    physics.fall_event.add_observer(achievements);
-    physics.update_entity(hero);
+    let mut physics = Physics::new();
+    physics.fall_event().add_observer(&achievements);
+    physics.update_entity(&hero);
 }
