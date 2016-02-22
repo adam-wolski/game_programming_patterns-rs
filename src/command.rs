@@ -15,7 +15,7 @@ fn make_move_unit_cmd(unit: Player, x: i32, y:i32) -> Box<Fn()> {
 }
 
 pub fn test() {
-    println!("---------------------------");
+    println!("\n---------------------------");
     println!("Command test.\n");
     let unit = Player;
     let cmd = make_move_unit_cmd(unit, 5, 10);

@@ -93,11 +93,10 @@ impl World {
 }
 
 pub fn test() {
-    println!("---------------------------");
+    println!("\n---------------------------");
     println!("Flyweight test.\n");
     let mut world = World::new();
     world.generate_world();
-    println!("{:#?}", world);
     let tile = world.get_tile(2, 4);
     println!("Tile at: [2][4]\nCost {}, Is it water? {}",
              tile.get_movement_cost(),
