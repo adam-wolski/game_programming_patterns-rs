@@ -1,0 +1,7 @@
+[package]
+name = "gameprogrammingpatterns"
+version = "0.1.0"
+authors = ["Adam Wolski <miniukof@gmail.com>"]
+
+[dependencies]
+rand = '*'
