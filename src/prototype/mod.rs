@@ -3,8 +3,11 @@
 trait Monster {
     fn health(&self) -> i32;
     fn speed(&self) -> u32;
+    /// Clone itself with all the members values.
     fn clone(&self) -> Self;
-    fn clone_new() -> Self; // For second style of spawner.
+    /// Used in template style spawner. 
+    /// This one creates new Monster with defaults specified in that method.
+    fn clone_new() -> Self;
 }
 
 #[derive(Debug)]
@@ -33,8 +36,8 @@ impl Monster for Ghost {
     }
     fn clone_new() -> Ghost {
         Ghost {
-            speed: 15,
-            health: 3,
+            speed: 2,
+            health: 8,
         }
     }
 }
@@ -63,17 +66,28 @@ impl SpawnerT {
     }
 }
 
-pub fn test() {
-    println!("\n---------------------------");
-    println!("Prototype test.\n");
-    let ghost_prototype = Ghost::new(15, 3);
-    let ghost_spawner = Spawner::new(ghost_prototype);
-    let ghost = ghost_spawner.spawn();
-    println!("Ghost1");
-    println!("{:#?}", ghost);    
 
-    // Generic style
-    let ghost2 = SpawnerT::spawn::<Ghost>();
-    println!("Ghost2");
-    println!("{:#?}", ghost2);    
+#[cfg(test)]
+mod tests {
+    use super::{Ghost, Spawner, SpawnerT, Monster};
+
+    #[test]
+    pub fn prototype() {
+        println!("\n---------------------------");
+        println!("Prototype test.\n");
+        let ghost_prototype = Ghost::new(15, 3);
+        let ghost_spawner = Spawner::new(ghost_prototype);
+        let ghost = ghost_spawner.spawn();
+        println!("Ghost1");
+        println!("{:#?}", ghost);    
+        assert!(ghost.health() == 15);
+        assert!(ghost.speed() == 3);
+
+        // Using generic spawner.
+        let ghost2 = SpawnerT::spawn::<Ghost>();
+        println!("Ghost2");
+        println!("{:#?}", ghost2);    
+        assert!(ghost2.health() == 8);
+        assert!(ghost2.speed() == 2);
+    }
 }
