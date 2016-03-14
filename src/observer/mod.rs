@@ -11,17 +11,18 @@ enum Achievement {
 }
 
 
-trait Observer {
+pub trait Observer {
     fn on_notify<E: Entity>(&self, entity: &E, event: Event);
 }
 
 
-trait Entity {
+pub trait Entity {
     fn is_hero(&self) -> bool;
 }
 
 
-struct Hero;
+pub struct Hero;
+
 impl Hero {
     pub fn new() -> Hero {
         Hero
@@ -36,7 +37,7 @@ impl Entity for Hero {
 
 
 #[derive(PartialEq)]
-struct Achievements {
+pub struct Achievements {
     hero_on_bridge: bool,
 }
 
@@ -46,7 +47,7 @@ impl Achievements {
     }
     fn unlock(&self, achievement: Achievement) {
         match achievement {
-            Achievement::FellOfTheBridge => println!("Fall of the bridge achievement unlocked.")
+            Achievement::FellOfTheBridge => println!("Fall of the bridge achievement unlocked."),
         }
     }
 }
@@ -64,23 +65,20 @@ impl Observer for Achievements {
     }
 }
 
-trait Subject<'a, T: Observer>{
+pub trait Subject<'a, T: Observer>{
     fn add_observer(&mut self, observer: &'a T);
     fn remove_observer(&mut self, observer: &'a T);
     fn notify<E: Entity>(&self, entity: &E, event: Event);
 }
 
-struct EntityFallSubject<'a, T: 'a> {
+pub struct EntityFallSubject<'a, T: 'a> {
     observers: Vec<&'a T>,
 }
 
-impl<'a, T> EntityFallSubject<'a, T>
-    where T: Observer
+impl<'a, T> EntityFallSubject<'a, T> where T: Observer
 {
     pub fn new() -> EntityFallSubject<'a, T> {
-        EntityFallSubject {
-            observers: Vec::new()
-        }
+        EntityFallSubject { observers: Vec::new() }
     }
 }
 
@@ -104,7 +102,7 @@ impl<'a, T> Subject<'a, T> for EntityFallSubject<'a, T> where T: Observer + Part
 }
 
 
-struct Physics<'a, T: 'a + Observer> {
+pub struct Physics<'a, T: 'a + Observer> {
     fall_event: EntityFallSubject<'a, T>,
 }
 
@@ -126,12 +124,18 @@ impl<'a, T> Physics<'a, T> where T: Observer + PartialEq
     }
 }
 
-pub fn test() {
-    println!("\n---------------------------");
-    println!("Command test.\n");
-    let hero = Hero::new();
-    let achievements = Achievements::new();
-    let mut physics = Physics::new();
-    physics.fall_event().add_observer(&achievements);
-    physics.update_entity(&hero);
+#[cfg(test)]
+mod tests {
+    use super::{Hero, Achievements, Physics, Subject};
+
+    #[test]
+    pub fn observer() {
+        println!("\n---------------------------");
+        println!("Command test.\n");
+        let hero = Hero::new();
+        let achievements = Achievements::new();
+        let mut physics = Physics::new();
+        physics.fall_event().add_observer(&achievements);
+        physics.update_entity(&hero);
+    }
 }
