@@ -1,6 +1,6 @@
 //! http://gameprogrammingpatterns.com/prototype.html 
 
-trait Monster {
+pub trait Monster {
     fn health(&self) -> i32;
     fn speed(&self) -> u32;
     /// Clone itself with all the members values.
@@ -11,13 +11,13 @@ trait Monster {
 }
 
 #[derive(Debug)]
-struct Ghost {
+pub struct Ghost {
     health: i32,
     speed: u32,
 }
 
 impl Ghost {
-    fn new(health: i32, speed: u32) -> Ghost {
+    pub fn new(health: i32, speed: u32) -> Ghost {
         Ghost {
             health: health,
             speed: speed,
@@ -42,7 +42,7 @@ impl Monster for Ghost {
     }
 }
 
-struct Spawner<T: Monster> {
+pub struct Spawner<T: Monster> {
     prototype: T
 }
 
@@ -58,7 +58,7 @@ impl<T: Monster> Spawner<T> {
 }
 
 // Second style of spawner described in Templates section.
-struct SpawnerT;
+pub struct SpawnerT;
 
 impl SpawnerT {
     pub fn spawn<T: Monster>() -> T {
