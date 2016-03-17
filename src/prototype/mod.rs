@@ -1,4 +1,5 @@
-//! http://gameprogrammingpatterns.com/prototype.html 
+//! Prototype Pattern
+//! http://gameprogrammingpatterns.com/prototype.html
 
 pub trait Monster {
     fn health(&self) -> i32;
@@ -26,8 +27,12 @@ impl Ghost {
 }
 
 impl Monster for Ghost {
-    fn health(&self) -> i32 { self.health }
-    fn speed(&self) -> u32 { self.speed }
+    fn health(&self) -> i32 {
+        self.health
+    }
+    fn speed(&self) -> u32 {
+        self.speed
+    }
     fn clone(&self) -> Ghost {
         Ghost {
             speed: self.speed,
@@ -43,14 +48,12 @@ impl Monster for Ghost {
 }
 
 pub struct Spawner<T: Monster> {
-    prototype: T
+    prototype: T,
 }
 
 impl<T: Monster> Spawner<T> {
     pub fn new(prototype: T) -> Spawner<T> {
-        Spawner {
-            prototype: prototype,
-        }
+        Spawner { prototype: prototype }
     }
     pub fn spawn(&self) -> T {
         self.prototype.clone()
@@ -73,20 +76,14 @@ mod tests {
 
     #[test]
     pub fn prototype() {
-        println!("\n---------------------------");
-        println!("Prototype test.\n");
         let ghost_prototype = Ghost::new(15, 3);
         let ghost_spawner = Spawner::new(ghost_prototype);
         let ghost = ghost_spawner.spawn();
-        println!("Ghost1");
-        println!("{:#?}", ghost);    
         assert!(ghost.health() == 15);
         assert!(ghost.speed() == 3);
 
         // Using generic spawner.
         let ghost2 = SpawnerT::spawn::<Ghost>();
-        println!("Ghost2");
-        println!("{:#?}", ghost2);    
         assert!(ghost2.health() == 8);
         assert!(ghost2.speed() == 2);
     }
