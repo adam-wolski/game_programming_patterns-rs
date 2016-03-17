@@ -1,22 +1,17 @@
+//! Flyweight Pattern
 //! http://gameprogrammingpatterns.com/flyweight.html
-//!
-//! Some changes to how it was presented in c++ code.
-//! To hold terrain types inside world we had to wrap them in Rc. Which ofcourse gives us
-//! more safety but at propably small but existent performance cost.
-//!
-//! Holding terrain types in Rc means that our terrain types are of type Rc<Terrain> which doesn't
-//! implement Copy. That means we can't easily allocate array of fixed size with them.
-//! So instead i've used Vecs with specified capacity to try to avoid realocation.
 
 use rand::{self, Rng};
 use std::rc::Rc;
 
-// Width and height of world.
+/// Example World Width 
 const WIDTH: usize = 5;
+/// Example World Height 
 const HEIGHT: usize = 5;
 
-#[derive(Debug)]
-struct Terrain {
+/// Terrain type that will be referenced around using the pattern.
+#[derive(Debug, Default)]
+pub struct Terrain {
     movement_cost: i32,
     is_water: bool,
 }
@@ -28,7 +23,6 @@ impl Terrain {
             is_water: is_water,
         }
     }
-
     pub fn is_water(&self) -> bool {
         self.is_water
     }
@@ -37,12 +31,14 @@ impl Terrain {
     }
 }
 
-#[derive(Debug)]
-struct World {
-    tiles: Vec<Vec<Rc<Terrain>>>,
-    grass_terrain: Rc<Terrain>,
-    hill_terrain: Rc<Terrain>,
-    river_terrain: Rc<Terrain>,
+/// Our game world structure containing all the tiles with their associated terrain type.
+/// That's basically whole pattern. Make terrain type only once in memory and then reference it.
+#[derive(Debug, Default)]
+pub struct World {
+    pub tiles: Vec<Vec<Rc<Terrain>>>,
+    pub grass_terrain: Rc<Terrain>,
+    pub hill_terrain: Rc<Terrain>,
+    pub river_terrain: Rc<Terrain>,
 }
 
 impl World {
@@ -53,11 +49,13 @@ impl World {
 
         // Create array from vectors.
         // Specify capacity for them so we don't get realloaction for known size of the World.
-        // Then as the initialization fill them with grass terrain.
         let mut tiles_x = Vec::with_capacity(WIDTH);
+
+        // Then as the initialization fill them with grass terrain.
         for _ in 0..WIDTH {
             tiles_x.push(gt.clone())
         }
+        // and again.
         let mut tiles: Vec<Vec<Rc<Terrain>>> = Vec::with_capacity(HEIGHT);
         for _ in 0..HEIGHT {
             tiles.push(tiles_x.clone());
@@ -71,6 +69,8 @@ impl World {
     }
 
     pub fn generate_world(&mut self) {
+
+        // Random hills and grass.
         for x in 0..WIDTH {
             for y in 0..HEIGHT {
                 if rand::thread_rng().gen_range(0, 11) == 10 {
@@ -80,8 +80,9 @@ impl World {
                 }
             }
         }
+
+        // Random river.
         let x: usize = rand::thread_rng().gen_range(0, WIDTH);
-        // Random river
         for y in 0..HEIGHT {
             self.tiles[x][y] = self.river_terrain.clone();
         }
@@ -92,13 +93,15 @@ impl World {
     }
 }
 
-pub fn test() {
-    println!("\n---------------------------");
-    println!("Flyweight test.\n");
-    let mut world = World::new();
-    world.generate_world();
-    let tile = world.get_tile(2, 4);
-    println!("Tile at: [2][4]\nCost {}, Is it water? {}",
-             tile.get_movement_cost(),
-             tile.is_water());
+#[cfg(test)]
+mod tests {
+    use super::World;
+
+    #[test]
+    pub fn flyweight() {
+        let mut world = World::new();
+        world.generate_world();
+        let tile = world.get_tile(2, 4);
+        println!("{:#?}", tile);
+    }
 }
