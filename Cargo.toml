@@ -5,3 +5,4 @@ authors = ["Adam Wolski <miniukof@gmail.com>"]
 
 [dependencies]
 rand = '*'
+clippy = '*'
