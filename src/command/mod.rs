@@ -1,10 +1,10 @@
+//! Command Pattern
 //! http://gameprogrammingpatterns.com/command.html
-//! Not much problem with this one in rust.
-//! We still can't return closure though so we have to Box it.
 
-struct Player {
+/// Our player character who we will be moving using our command.
+pub struct Player {
     pub x: i32,
-    pub y: i32
+    pub y: i32,
 }
 
 impl Player {
@@ -15,19 +15,19 @@ impl Player {
     }
 }
 
-fn make_move_unit_cmd(x: i32, y:i32) -> Box<Fn(&mut Player)> {
+/// Command pattern command.
+// We have to box the closure so the size of the return type is known on compile..
+pub fn make_move_unit_cmd(x: i32, y: i32) -> Box<Fn(&mut Player)> {
     Box::new(move |unit: &mut Player| unit.move_to(x, y))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{ Player, make_move_unit_cmd};
+    use super::{Player, make_move_unit_cmd};
 
     #[test]
-    pub fn visual() {
-        println!("\n---------------------------");
-        println!("Command test.\n");
-        let mut unit = Player {x: 0, y: 0};
+    pub fn command() {
+        let mut unit = Player { x: 0, y: 0 };
         let cmd = make_move_unit_cmd(5, 10);
         cmd(&mut unit);
         assert!(unit.x == 5);
