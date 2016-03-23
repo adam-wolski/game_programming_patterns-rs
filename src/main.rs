@@ -10,6 +10,7 @@ pub mod flyweight;
 pub mod observer;
 pub mod prototype;
 pub mod state;
+pub mod double_buffer;
 
 // Import traits.
 use observer::{Observer, Subject};
@@ -99,5 +100,12 @@ pub fn main() {
     hero.update();
     hero.handle_input(state::Input::PressDown);
     hero.update();
+
+    
+    // # Double Buffer
+    println!("\n---------------------------");
+    println!("Double Buffer pattern test.\n");
+    let mut scene = double_buffer::Scene::new();    
+    scene.draw();
 
 }
