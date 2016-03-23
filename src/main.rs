@@ -51,7 +51,7 @@ pub fn main() {
     let mut physics = observer::Physics::new();
     physics.fall_event().add_observer(a_observer);
     physics.update_entity(&hero);
-    assert!(achievements.borrow().hero_fallen == true);
+    assert!(achievements.borrow().hero_fallen);
     println!("Hero has fallen!");
 
     // # Prototype
@@ -69,4 +69,35 @@ pub fn main() {
 
     // # State
     // ## Finite State Machine
+    println!("\n---------------------------");
+    println!("finite state machine test.\n");
+    let mut hero = state::finite_state_machine::Heroine::new();
+    hero.handle_input(state::Input::PressDown);
+    hero.update();
+    hero.update();
+    hero.update();
+    hero.update();
+    hero.handle_input(state::Input::ReleaseDown);
+    hero.update();
+    hero.handle_input(state::Input::PressB);
+    hero.update();
+    hero.handle_input(state::Input::PressDown);
+    hero.update();
+
+    // ## State pattern
+    println!("\n---------------------------");
+    println!("State pattern test.\n");
+    let mut hero = state::state_pattern::Heroine::new();
+    hero.handle_input(state::Input::PressDown);
+    hero.update();
+    hero.update();
+    hero.update();
+    hero.update();
+    hero.handle_input(state::Input::ReleaseDown);
+    hero.update();
+    hero.handle_input(state::Input::PressB);
+    hero.update();
+    hero.handle_input(state::Input::PressDown);
+    hero.update();
+
 }
