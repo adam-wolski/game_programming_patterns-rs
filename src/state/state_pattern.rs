@@ -1,69 +1,101 @@
-//! State pattern example from http://gameprogrammingpatterns.com/state.html.
-//! # NOT IMPLEMENTED YET
-//! TODO We have to hold generic HeroineStates in some way in Heroine. Don't know what to do about
-//! it right now.
-//!
+//! State pattern
+//! from http://gameprogrammingpatterns.com/state.html.
+
 use std::cell::RefCell;
+use std::rc::Rc;
+
 use state::{Input, Graphic};
 const JUMP_VELOCITY: i32 = 10;
 const MAX_CHARGE: u32 = 3;
 
-// Heroine Herself
-#[derive(Clone)]
-struct Heroine {
+/// State wraped in a way that enables it's storage and mutable access in Heroine.
+type WrapedState = Rc<RefCell<Box<HeroineState>>>;
+
+/// Macro for creating Reference counter of Reference Cell with box of the state in it.
+macro_rules! wrap_state {
+    ($state:expr) => {
+        Rc::new(RefCell::new(Box::new($state)))
+    }
+}
+
+/// Heroine Herself
+pub struct Heroine {
     y_velocity: i32,
     x_velocity: i32,
     graphic: Graphic,
-    state: RefCell<Box<HeroineState>>,
+    state: WrapedState,
 }
+
 
 impl Heroine {
     pub fn new() -> Heroine {
         Heroine {
-            state: RefCell::new(Box::new(StandingState::new())),
+            state: wrap_state!(StandingState::new()),
             y_velocity: 0,
             x_velocity: 0,
             graphic: Graphic::Stand,
         }
     }
+
     pub fn handle_input(&mut self, input: Input) {
-        self.state.borrow_mut().clone().handle_input(self, input);
+        let state = self.state.clone();
+        state.borrow_mut().handle_input(self, input);
     }
+
     pub fn update(&mut self) {
-        self.state.borrow_mut().update(&mut self);
+        let state = self.state.clone();
+        state.borrow_mut().update(self);
     }
-    pub fn set_state<T: 'static + HeroineState>(&mut self, state: Box<T>) {
-        self.state = RefCell::new(state);
-        self.state.borrow_mut().enter(&mut self);
+
+    pub fn set_state(&mut self, state: Rc<RefCell<Box<HeroineState>>>) {
+        state.borrow_mut().enter(self);
+        self.state = state;
     }
+
     pub fn set_y_vel(&mut self, vel: i32) {
         self.y_velocity = vel;
     }
+
     pub fn set_x_vel(&mut self, vel: i32) {
         self.x_velocity = vel;
     }
+
     pub fn set_graphic(&mut self, graphic: Graphic) {
         println!("Changing graphic to: {:?}", graphic);
         self.graphic = graphic;
     }
+
     pub fn super_bomb(&self) {
         println!("BOOM!");
     }
 }
 
-// Heroine State
-trait HeroineState {
+impl Default for Heroine {
+    fn default() -> Heroine {
+        Heroine {
+            state: wrap_state!(StandingState::new()),
+            y_velocity: 0,
+            x_velocity: 0,
+            graphic: Graphic::Stand,
+        }
+    }
+}
+
+pub trait HeroineState {
+    fn state_name(&self) -> String;
     fn handle_input(&mut self, heroine: &mut Heroine, input: Input);
     fn update(&mut self, heroine: &mut Heroine);
     fn enter(&mut self, heroine: &mut Heroine);
 }
 
-// Standing State
-struct StandingState;
+#[derive(Default)]
+struct StandingState {
+    name: String,
+}
 
 impl StandingState {
     pub fn new() -> StandingState {
-        StandingState
+        StandingState { name: "StandingState".to_owned() }
     }
 }
 
@@ -75,43 +107,49 @@ impl HeroineState for StandingState {
     fn handle_input(&mut self, heroine: &mut Heroine, input: Input) {
         match input {
             Input::PressB => {
-                heroine.set_state(Box::new(JumpState::new()));
+                heroine.set_state(wrap_state!(JumpState::new()));
             }
             Input::PressDown => {
-                heroine.set_state(Box::new(DuckingState::new()));
+                heroine.set_state(wrap_state!(DuckingState::new()));
             }
             _ => {}
         }
     }
-    fn update(&mut self, heroine: &mut Heroine) {
+    fn update(&mut self, _heroine: &mut Heroine) {
         // ...
+    }
+    fn state_name(&self) -> String {
+        self.name.clone()
     }
 }
 
 
 // Ducking State
+#[derive(Default)]
 struct DuckingState {
-    charge_time: u32
+    name: String,
+    charge_time: u32,
 }
 
 impl DuckingState {
     pub fn new() -> DuckingState {
         DuckingState {
-            charge_time: 0
+            name: "DuckingState".to_owned(),
+            charge_time: 0,
         }
     }
 }
 
 impl HeroineState for DuckingState {
+    fn state_name(&self) -> String {
+        self.name.clone()
+    }
     fn enter(&mut self, heroine: &mut Heroine) {
         heroine.set_graphic(Graphic::Duck)
     }
     fn handle_input(&mut self, heroine: &mut Heroine, input: Input) {
-        match input {
-            Input::ReleaseDown => {
-                heroine.set_state(Box::new(StandingState::new()));
-            }
-            _ => {}
+        if let Input::ReleaseDown = input {
+            heroine.set_state(wrap_state!(StandingState::new()));
         }
     }
     fn update(&mut self, heroine: &mut Heroine) {
@@ -125,48 +163,57 @@ impl HeroineState for DuckingState {
 
 
 // Jumping State
-pub struct JumpState;
+#[derive(Default)]
+pub struct JumpState {
+    name: String,
+}
 
 impl JumpState {
     pub fn new() -> JumpState {
-        JumpState
+        JumpState { name: "JumpState".to_owned() }
     }
 }
 
 impl HeroineState for JumpState {
+    fn state_name(&self) -> String {
+        self.name.clone()
+    }
     fn enter(&mut self, heroine: &mut Heroine) {
         println!("Entering JumpState!");
         heroine.set_graphic(Graphic::Jump);
         heroine.y_velocity = JUMP_VELOCITY;
     }
     fn handle_input(&mut self, heroine: &mut Heroine, input: Input) {
-        match input {
-            Input::PressDown => {
-                heroine.set_state(Box::new(DivingState::new()));
-            }
-            _ => {}
+        if let Input::PressDown = input {
+            heroine.set_state(wrap_state!(DivingState::new()));
         }
     }
-    fn update(&mut self, heroine: &mut Heroine) {
+    fn update(&mut self, _heroine: &mut Heroine) {
         // ...
     }
 }
 
 
 // Diving State
-pub struct DivingState;
+#[derive(Default)]
+pub struct DivingState {
+    name: String,
+}
 
 impl DivingState {
     pub fn new() -> DivingState {
-        DivingState
+        DivingState { name: "DivingState".to_owned() }
     }
 }
 
 impl HeroineState for DivingState {
-    fn handle_input(&mut self, heroine: &mut Heroine, input: Input) {
+    fn state_name(&self) -> String {
+        self.name.clone()
+    }
+    fn handle_input(&mut self, _heroine: &mut Heroine, _input: Input) {
         // ...
     }
-    fn update(&mut self, heroine: &mut Heroine) {
+    fn update(&mut self, _heroine: &mut Heroine) {
         // ...
     }
     fn enter(&mut self, heroine: &mut Heroine) {
@@ -176,19 +223,35 @@ impl HeroineState for DivingState {
 }
 
 
-fn test() {
-    println!("\n---------------------------");
-    println!("State pattern test.\n");
-    let mut hero = Heroine::new();
-    hero.handle_input(Input::PressDown);
-    hero.update();
-    hero.update();
-    hero.update();
-    hero.update();
-    hero.handle_input(Input::ReleaseDown);
-    hero.update();
-    hero.handle_input(Input::PressB);
-    hero.update();
-    hero.handle_input(Input::PressDown);
-    hero.update();
+#[cfg(test)]
+mod tests {
+    use super::{Heroine, HeroineState};
+    use super::super::Input;
+
+    #[test]
+    fn state_pattern() {
+        println!("\n---------------------------");
+        println!("State pattern test.\n");
+        let mut hero = Heroine::new();
+        assert!(hero.state.borrow().state_name() == "StandingState");
+        hero.handle_input(Input::PressDown);
+        hero.update();
+        hero.update();
+        assert!(hero.state.borrow().state_name() == "DuckingState");
+        hero.update();
+        hero.update();
+        assert!(hero.state.borrow().state_name() == "DuckingState");
+        hero.handle_input(Input::ReleaseDown);
+        assert!(hero.state.borrow().state_name() == "StandingState");
+        hero.update();
+        assert!(hero.state.borrow().state_name() == "StandingState");
+        hero.handle_input(Input::PressB);
+        assert!(hero.state.borrow().state_name() == "JumpState");
+        hero.update();
+        assert!(hero.state.borrow().state_name() == "JumpState");
+        hero.handle_input(Input::PressDown);
+        assert!(hero.state.borrow().state_name() == "DivingState");
+        hero.update();
+        assert!(hero.state.borrow().state_name() == "DivingState");
+    }
 }
