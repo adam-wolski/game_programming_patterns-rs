@@ -1,29 +1,37 @@
 //! Finite State Machine
-//! First example from http://gameprogrammingpatterns.com/state.html using standard switch or match
+//! First example from http://gameprogrammingpatterns.com/state.html
+//! Using standard switch/match techniques.
 
 use state::{Input, Graphic};
+
 const JUMP_VELOCITY: i32 = 10;
 const MAX_CHARGE: u32 = 3;
 
-#[derive(Debug)]
-enum State {
+#[derive(Debug, PartialEq)]
+pub enum State {
     Jumping,
     Standing,
     Ducking,
     Diving,
 }
 
-#[derive(Debug)]
-struct Heroine {
-    state: State,
-    graphic: Graphic,
-    y_velocity: i32,
-    charge_time: u32
+impl Default for State {
+    fn default() -> State {
+        State::Standing
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct Heroine {
+    pub state: State,
+    pub graphic: Graphic,
+    pub y_velocity: i32,
+    pub charge_time: u32,
 }
 
 impl Heroine {
     pub fn new() -> Heroine {
-        Heroine { 
+        Heroine {
             state: State::Standing,
             graphic: Graphic::Stand,
             charge_time: 0,
@@ -42,15 +50,12 @@ impl Heroine {
     }
 
     pub fn update(&mut self) {
-        match self.state {
-            State::Ducking => {
-                self.charge_time += 1;
-                if self.charge_time > MAX_CHARGE {
-                    self.super_bomb();
-                }
+        if let State::Ducking = self.state {
+            println!("Ducking");
+            self.charge_time += 1;
+            if self.charge_time > MAX_CHARGE {
+                self.super_bomb();
             }
-            // ... other
-            _ => {}
         }
     }
 
@@ -74,23 +79,17 @@ impl Heroine {
                 }
             }
             State::Jumping => {
-                match input {
-                    Input::PressDown => {
-                        self.state = State::Diving;
-                        println!("Changing state to Diving");
-                        self.set_graphics(Graphic::Dive);
-                    }
-                    _ => {}
+                if let Input::PressDown = input {
+                    self.state = State::Diving;
+                    println!("Changing state to Diving");
+                    self.set_graphics(Graphic::Dive);
                 }
             }
             State::Ducking => {
-                match input {
-                    Input::ReleaseDown => {
-                        self.state = State::Standing;
-                        println!("Changing state to Standing");
-                        self.set_graphics(Graphic::Stand);
-                    }
-                    _ => {}
+                if let Input::ReleaseDown = input {
+                    self.state = State::Standing;
+                    println!("Changing state to Standing");
+                    self.set_graphics(Graphic::Stand);
                 }
             }
             _ => {}
@@ -98,19 +97,36 @@ impl Heroine {
     }
 }
 
-pub fn test() {
-    println!("\n---------------------------");
-    println!("Finite state machine test.\n");
-    let mut hero = Heroine::new(); 
-    hero.handle_input(Input::PressDown);
-    hero.update();
-    hero.update();
-    hero.update();
-    hero.update();
-    hero.handle_input(Input::ReleaseDown);
-    hero.update();
-    hero.handle_input(Input::PressB);
-    hero.update();
-    hero.handle_input(Input::PressDown);
-    hero.update();
+#[cfg(test)]
+mod tests {
+    use super::{Heroine, State};
+    use super::super::Input;
+
+    #[test]
+    pub fn finite_state_machine() {
+        let mut hero = Heroine::new();
+        assert!(hero.state == State::Standing);
+        hero.handle_input(Input::PressDown);
+        assert!(hero.state == State::Ducking);
+        hero.update();
+        assert!(hero.state == State::Ducking);
+        hero.update();
+        assert!(hero.state == State::Ducking);
+        hero.update();
+        assert!(hero.state == State::Ducking);
+        hero.update();
+        assert!(hero.state == State::Ducking);
+        hero.handle_input(Input::ReleaseDown);
+        assert!(hero.state == State::Standing);
+        hero.update();
+        assert!(hero.state == State::Standing);
+        hero.handle_input(Input::PressB);
+        assert!(hero.state == State::Jumping);
+        hero.update();
+        assert!(hero.state == State::Jumping);
+        hero.handle_input(Input::PressDown);
+        assert!(hero.state == State::Diving);
+        hero.update();
+        assert!(hero.state == State::Diving);
+    }
 }
