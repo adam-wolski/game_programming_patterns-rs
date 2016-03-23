@@ -1,22 +1,34 @@
+//! State Patterns
 //! http://gameprogrammingpatterns.com/state.html
 
 pub mod finite_state_machine;
-// TODO state_pattern
-// pub mod state_pattern;
+pub mod state_pattern;
 
 // Offscreen defines needed in examples.
 #[derive(Debug, Clone, Copy)]
-enum Input {
+pub enum Input {
     PressB,
-    ReleaseB,
+    _ReleaseB,
     PressDown,
-    ReleaseDown
+    ReleaseDown,
+}
+
+impl Default for Input {
+    fn default() -> Input {
+        Input::PressB
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
-enum Graphic {
+pub enum Graphic {
     Jump,
     Duck,
     Stand,
-    Dive
+    Dive,
+}
+
+impl Default for Graphic {
+    fn default() -> Graphic {
+        Graphic::Stand
+    }
 }
