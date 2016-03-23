@@ -1,5 +1,5 @@
 [package]
-name = "gameprogrammingpatterns"
+name = "game_programming_patterns-rs"
 version = "0.1.0"
 authors = ["Adam Wolski <miniukof@gmail.com>"]
 
