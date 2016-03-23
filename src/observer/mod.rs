@@ -52,9 +52,7 @@ pub struct Achievements {
 
 impl Achievements {
     pub fn new() -> Achievements {
-        Achievements {
-            hero_fallen: false,
-        }
+        Achievements { hero_fallen: false }
     }
 
     fn unlock(&mut self, achievement: Achievement) {
@@ -130,7 +128,7 @@ impl Observer for AchievementObserver {
                     self.unlocked.push(Achievement::FellOfTheBridge);
                     self.achievements.borrow_mut().unlock(Achievement::FellOfTheBridge);
                 }
-            // Handle other events...
+                // Handle other events...
             }
         }
     }
@@ -213,6 +211,6 @@ mod tests {
         let mut physics = Physics::new();
         physics.fall_event().add_observer(a_observer);
         physics.update_entity(&hero);
-        assert!(achievements.borrow().hero_fallen == true);
+        assert!(achievements.borrow().hero_fallen);
     }
 }
