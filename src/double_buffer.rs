@@ -1,4 +1,4 @@
-//! Double Buffer pattern.
+//! Double Buffer Pattern.
 //! http://gameprogrammingpatterns.com/double-buffer.html
 
 
