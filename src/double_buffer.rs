@@ -23,9 +23,7 @@ impl FrameBuffer {
         for _ in 0..data.capacity() {
             data.push(0);
         }
-        FrameBuffer { 
-            data: data,
-        }
+        FrameBuffer { data: data }
     }
 
     /// Set location (x, y) in buffer to specified color tuple (R, G, B, A).
@@ -42,7 +40,6 @@ impl FrameBuffer {
             self.data[i] = 0;
         }
     }
-
 }
 
 
@@ -84,7 +81,7 @@ impl Scene {
 
 #[cfg(test)]
 mod tests {
-    use super::{Scene};
+    use super::Scene;
 
     #[test]
     fn double_buffer() {

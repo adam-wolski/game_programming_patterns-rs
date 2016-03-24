@@ -21,7 +21,12 @@ use std::rc::Rc;
 pub fn main() {
     // Let's use all the modules so we don't get "is never used" warnings.
     // Those are the same as in the test functions.
-    //
+
+
+    // ============================================================================================
+    // Design Patterns
+    // ============================================================================================
+
     // # Command
     println!("\n---------------------------");
     println!("Command test.\n");
@@ -101,11 +106,14 @@ pub fn main() {
     hero.handle_input(state::Input::PressDown);
     hero.update();
 
-    
+    // ============================================================================================
+    // Sequence Patterns
+    // ============================================================================================
+
     // # Double Buffer
     println!("\n---------------------------");
     println!("Double Buffer pattern test.\n");
-    let mut scene = double_buffer::Scene::new();    
+    let mut scene = double_buffer::Scene::new();
     scene.draw();
 
 }
