@@ -4,6 +4,9 @@
 #![plugin(clippy)]
 
 extern crate rand;
+#[macro_use]
+extern crate enum_primitive;
+extern crate num;
 
 pub mod command;
 pub mod flyweight;
@@ -11,6 +14,7 @@ pub mod observer;
 pub mod prototype;
 pub mod state;
 pub mod double_buffer;
+pub mod bytecode;
 
 // Import traits.
 use observer::{Observer, Subject};
@@ -116,4 +120,35 @@ pub fn main() {
     let mut scene = double_buffer::Scene::new();
     scene.draw();
 
+    // # Game Loop
+    // As we don't want to loop in here game loop sits safely in it's own module.
+
+    // ============================================================================================
+    // Behavioral Patterns
+    // ============================================================================================
+
+    // # Bytecode
+    println!("\n---------------------------");
+    println!("Bytecode Pattern test.\n");
+    let mut bytecode: Vec<u8> = Vec::new();
+    // set_health(0, get_health(0) + (get_agility(0) + get_wisdom(0)) / 2);
+    bytecode.push(1);  // Literal                       []
+    bytecode.push(0);  // Wizard index                  [0]
+    bytecode.push(1);  // Literal
+    bytecode.push(0);  // Wizard index                  [0, 0]
+    bytecode.push(7);  // Get health                    [0, 5]
+    bytecode.push(1);  // Literal
+    bytecode.push(0);  // Wizard index                  [0, 5, 0]
+    bytecode.push(8);  // Get Agility                   [0, 5, 8]
+    bytecode.push(1);  // Literal
+    bytecode.push(0);  // Wizard index                  [0, 5, 8, 0]
+    bytecode.push(9);  // Get Wisdom                    [0, 5, 8, 12]
+    bytecode.push(10); // Add Agility and wisdom        [0, 5, 20]
+    bytecode.push(1);  // Literal
+    bytecode.push(2);  // Divisor                       [0, 5, 20, 2]
+    bytecode.push(11); // Divide                        [0, 5, 10]
+    bytecode.push(10); // Add average to current health [0, 15]
+    bytecode.push(2);  // Set Health                    []
+    let mut vm = bytecode::VM::new(bytecode);
+    vm.interpret();
 }
