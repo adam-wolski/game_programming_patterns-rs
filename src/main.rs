@@ -15,9 +15,11 @@ pub mod prototype;
 pub mod state;
 pub mod double_buffer;
 pub mod bytecode;
+pub mod type_object;
 
 // Import traits.
 use observer::{Observer, Subject};
+use type_object::Monster;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -151,4 +153,11 @@ pub fn main() {
     bytecode.push(2);  // Set Health                    []
     let mut vm = bytecode::VM::new(bytecode);
     vm.interpret();
+
+    // # Type Object
+    println!("\n---------------------------");
+    println!("Type Object Pattern test.\n");
+    let parent = type_object::Breed::new(None, 15, "ARGH!".to_owned());
+    let child = type_object::Breed::new(Some(&parent), 0, "".to_owned());
+    child.attack();
 }
