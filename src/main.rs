@@ -16,6 +16,7 @@ pub mod state;
 pub mod double_buffer;
 pub mod bytecode;
 pub mod type_object;
+pub mod component;
 
 // Import traits.
 use observer::{Observer, Subject};
@@ -160,4 +161,19 @@ pub fn main() {
     let parent = type_object::Breed::new(None, 15, "ARGH!".to_owned());
     let child = type_object::Breed::new(Some(&parent), 0, "".to_owned());
     child.attack();
+
+    // ============================================================================================
+    // Decoupling Patterns
+    // ============================================================================================
+
+    // # Component
+    println!("\n---------------------------");
+    println!("Component Pattern test.\n");
+    let mut world = component::World::new();
+    let _tree = world.create_tree(0.0, 0.0);
+    let _box = world.create_box(9.0, 3.0);
+    let _ghst = world.create_ghost(3.0, 1.0);
+
+    component::movement_system(&mut world);
+    component::render_system(&mut world);
 }
