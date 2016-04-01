@@ -44,7 +44,7 @@ impl Entity for Hero {
 
 
 /// Achievements structure that will become our observer. 
-/// Well it will have it's own observer. Expained in AchievementObserver struct.
+/// Well it will have it's own observer. Expained in `AchievementObserver` struct.
 #[derive(Debug, Default)]
 pub struct Achievements {
     pub hero_fallen: bool,
