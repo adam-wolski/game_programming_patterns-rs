@@ -71,9 +71,8 @@ impl World {
     }
 
     fn create_entity(&self) -> Option<EntityId> {
-        // XXX: Don't clone in here.
-        for (id, mask) in self.masks.clone().into_iter().enumerate() {
-            if mask == Component::Empty as u32 {
+        for (id, mask) in self.masks.iter().enumerate() {
+            if *mask == Component::Empty as u32 {
                 println!("Found empty id: {}", id);
                 return Some(id);
             }
@@ -126,10 +125,8 @@ impl World {
 
     /// Get vector of entities with specified mask.
     pub fn get_with_mask(&self, mask: u32) -> Vec<EntityId> {
-        // XXX: Find way to don't clone here.
         self.masks
-            .clone()
-            .into_iter()
+            .iter()
             .enumerate()
             .filter(|&(_id, msk)| msk & mask == mask)
             .map(|(id, _msk)| id)
