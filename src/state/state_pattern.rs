@@ -225,7 +225,7 @@ impl HeroineState for DivingState {
 
 #[cfg(test)]
 mod tests {
-    use super::{Heroine, HeroineState};
+    use super::{Heroine};
     use super::super::Input;
 
     #[test]
