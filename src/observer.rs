@@ -90,10 +90,7 @@ pub trait Observer {
     fn id(&self) -> &String;
 }
 
-/// If we try to hold achievements struct itself in the Subject as a Observer, it will be tricky to 
-/// get access to it in rust. If we hold it a trait object will have get it back and downcast it.
-/// If we hold it as generic... Then we have to deal with storing generic which can be any size.
-/// Creating separate Observer is easiest way I found.
+
 pub struct AchievementObserver {
     // Unlocked Achievements
     unlocked: Vec<Achievement>,
