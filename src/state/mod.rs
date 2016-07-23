@@ -4,7 +4,7 @@
 pub mod finite_state_machine;
 pub mod state_pattern;
 
-// Offscreen defines needed in examples.
+// Enums needed in examples
 #[derive(Debug, Clone, Copy)]
 pub enum Input {
     PressB,
