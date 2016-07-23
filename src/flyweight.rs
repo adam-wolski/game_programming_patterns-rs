@@ -1,13 +1,16 @@
 //! Flyweight Pattern
 //! http://gameprogrammingpatterns.com/flyweight.html
 
+
 use rand::{self, Rng};
 use std::rc::Rc;
+
 
 /// Example World Width 
 const WIDTH: usize = 5;
 /// Example World Height 
 const HEIGHT: usize = 5;
+
 
 /// Terrain type that will be referenced around using the pattern.
 #[derive(Debug, Default)]
@@ -30,6 +33,7 @@ impl Terrain {
         self.movement_cost
     }
 }
+
 
 /// Our game world structure containing all the tiles with their associated terrain type.
 /// That's basically whole pattern. Make terrain type only once in memory and then reference it.
